@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abnner's AI</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #212121;
+            color: #ececf1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* TELA DE LOGIN ESTILO CHATGPT */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #171717;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 360px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #c5c5d2;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #4d4d4d;
+            background-color: #212121;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #10a37f; /* Verde clássico da OpenAI */
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #10a37f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .auth-btn:hover {
+            background-color: #1a7f64;
+        }
+
+        .toggle-auth {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #b4b4b4;
+        }
+
+        .toggle-auth span {
+            color: #10a37f;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* INTERFACE PRINCIPAL DO CHAT */
+        .container {
+            display: none; /* Fica oculto até logar */
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: #171717;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .new-chat-btn {
+            background: transparent;
+            color: white;
+            border: 1px solid #4d4d4d;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .new-chat-btn:hover {
+            background-color: #2a2b32;
+        }
+
+        .chat-history {
+            flex-grow: 1;
+            margin-top: 20px;
+        }
+
+        .history-title {
+            font-size: 12px;
+            color: #666;
+            padding: 5px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #212121;
+            font-size: 14px;
+        }
+
+        .sidebar-footer {
+            padding: 10px 5px;
+            border-top: 1px solid #2d2d2d;
+            font-size: 14px;
+            color: #c5c5d2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logout-link {
+            color: #ff4a4a;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 13px;
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #212121;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #b4b4b4;
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 10%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 85%;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .user-message {
+            background-color: #2f2f2f;
+            align-self: flex-end;
+        }
+
+        .ai-message, .system-message {
+            background-color: transparent;
+            align-self: flex-start;
+        }
+
+        .input-area {
+            padding: 20px 10%;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            background-color: #2f2f2f;
+            border: 1px solid #4f4f4f;
+            border-radius: 12px;
+            padding: 10px;
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            resize: none;
+            outline: none;
+            font-size: 16px;
+            padding-right: 40px;
+        }
+
+        #sendBtn {
+            position: absolute;
+            right: 15px;
+            bottom: 12px;
+            background-color: #676767;
+            color: #212121;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sendBtn.active {
+            background-color: #ffffff;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: #7d7d7d;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TELA DE LOGIN / CADASTRO -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h2 id="authTitle">Criar conta</h2>
+            
+            <div class="input-group">
+                <label>Endereço de e-mail</label>
+                <input type="email" id="authEmail" placeholder="nome@exemplo.com">
+            </div>
+
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" id="authPassword" placeholder="Sua senha">
+            </div>
+
+            <button class="auth-btn" id="authSubmitBtn">Continuar</button>
+
+            <div class="toggle-auth">
+                <span id="authToggleText">Já tem uma conta? Entrar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SITE PRINCIPAL (SÓ APARECE APÓS LOGAR) -->
+    <div class="container" id="mainContainer">
+        <aside class="sidebar">
+            <button class="new-chat-btn" onclick="window.location.reload()">+ Nova conversa</button>
+            <div class="chat-history">
+                <p class="history-title">Histórico recente</p>
+                <div class="history-item">Conversa atual</div>
+            </div>
+            <div class="sidebar-footer">
+                <span id="userDisplay">Usuário</span>
+                <span class="logout-link" id="logoutBtn">Sair</span>
+            </div>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <h1>Abnner's AI</h1>
+            </header>
+
+            <div class="chat-window" id="chatWindow">
+                <div class="message system-message" id="welcomeMessage">
+                    Como posso ajudar você hoje?
+                </div>
+            </div>
+
+            <footer class="input-area">
+                <div class="input-container">
+                    <textarea id="userInput" placeholder="Envie uma mensagem para a Abnner's AI..." rows="1"></textarea>
+                    <button id="sendBtn">➔</button>
+                </div>
+                <p class="disclaimer">A Abnner's AI pode cometer erros. Considere verificar informações importantes.</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- LÓGICA DO SISTEMA (LOGIN + CHAT COM IA) -->
+    <script>
+        // CONFIGURAÇÕES GERAIS
+        // Cole sua chave de API gerada na OpenAI entre as aspas abaixo:
+        const OPENAI_API_KEY = "SUA_CHAVE_API_AQUI"; 
+
+        // Elementos da Interface
+        const loginScreen = document.getElementById('loginScreen');
+        const mainContainer = document.getElementById('mainContainer');
+        const authTitle = document.getElementById('authTitle');
+        const authEmail = document.getElementById('authEmail');
+        const authPassword = document.getElementById('authPassword');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const authToggleText = document.getElementById('authToggleText');
+        const userDisplay = document.getElementById('userDisplay');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const chatWindow = document.getElementById('chatWindow');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        let isLoginMode = false; // Começa no modo "Criar Conta"
+
+        // Alternar entre Login e Cadastro
+        authToggleText.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
